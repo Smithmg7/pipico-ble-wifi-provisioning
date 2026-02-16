@@ -6,70 +6,125 @@
   <title>Pico Wi-Fi Setup</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
-    .card { border: 1px solid rgba(128,128,128,.35); border-radius: 14px; padding: 16px; margin: 14px 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 880px; margin: 22px auto; padding: 0 14px; }
+    h1 { margin: 10px 0 6px; }
+    .hint { opacity: .82; font-size: 14px; line-height: 1.35; }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 1.2fr .8fr; } }
+
+    .card { border: 1px solid rgba(128,128,128,.35); border-radius: 16px; padding: 16px; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    label { display: block; font-weight: 600; margin-top: 10px; }
-    input, select { width: 100%; padding: 10px; font-size: 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,.35); }
+    .spacer { flex: 1; }
+
     button { padding: 10px 14px; font-size: 16px; border-radius: 12px; border: 1px solid rgba(128,128,128,.35); cursor: pointer; }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-    pre { white-space: pre-wrap; background: rgba(128,128,128,.12); padding: 12px; border-radius: 12px; }
-    .hint { opacity: .85; font-size: 14px; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    input, select {
+      width: 100%; padding: 10px; font-size: 16px;
+      border-radius: 12px; border: 1px solid rgba(128,128,128,.35);
+    }
+    label { display:block; font-weight: 650; margin-top: 10px; margin-bottom: 6px; }
+
+    pre { white-space: pre-wrap; background: rgba(128,128,128,.12); padding: 12px; border-radius: 14px; overflow: auto; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(128,128,128,.35); }
+    .pill strong { font-weight: 700; }
+    .ok { border-color: rgba(0, 200, 120, .65); }
+    .warn { border-color: rgba(255, 165, 0, .65); }
+    .bad { border-color: rgba(255, 80, 80, .65); }
+
+    .banner {
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 1px solid rgba(128,128,128,.35);
+      background: rgba(128,128,128,.08);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .banner .big { font-size: 18px; font-weight: 750; }
+    .banner .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip { padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(128,128,128,.35); cursor: pointer; user-select: none; }
+    .chip:hover { background: rgba(128,128,128,.12); }
   </style>
 </head>
 <body>
   <h1>Pico Wi-Fi Setup</h1>
-  <p class="hint">
-    Works on Android Chrome and desktop Chrome/Edge. Your Pico must be advertising as <b>"Pico WiFi Setup"</b>.
-  </p>
-
-  <div class="card">
-    <div class="row">
-      <button id="btnConnect">1) Connect to Pico</button>
-      <button id="btnDisconnect" disabled>Disconnect</button>
-      <span id="connState" class="hint">Not connected</span>
-    </div>
+  <div class="hint">
+    Works on <b>Android Chrome</b> and <b>desktop Chrome/Edge</b>. Your Pico must be advertising as <b>“Pico WiFi Setup”</b>.
   </div>
 
-  <div class="card">
-    <h2>Wi-Fi Scan</h2>
-    <div class="row">
-      <button id="btnScan" disabled>2) Scan Wi-Fi</button>
-      <span class="hint">Shows SSIDs below (top ~15)</span>
-    </div>
-
-    <label for="ssidList">SSID list</label>
-    <select id="ssidList" disabled>
-      <option value="">(Scan to populate)</option>
-    </select>
-
-    <label for="ssid">SSID (or pick from list)</label>
-    <input id="ssid" placeholder="Your Wi-Fi SSID" autocomplete="off" />
-
-    <label for="pass">Password</label>
-    <input id="pass" type="password" placeholder="Wi-Fi password" autocomplete="off" />
-
-    <div class="row" style="margin-top:12px;">
-      <button id="btnSendCreds" disabled>3) Send SSID + Password</button>
-      <button id="btnConnectWifi" disabled>4) Connect Wi-Fi</button>
-    </div>
+  <div id="connBanner" class="banner bad" style="margin-top:12px;">
+    <span class="big">Not connected</span>
+    <span class="hint">Click “Connect to Pico” to begin.</span>
+    <span class="spacer"></span>
+    <span class="pill"><strong>BLE</strong> <span id="bleState">OFF</span></span>
   </div>
 
-  <div class="card">
-    <h2>Static IP Option</h2>
-    <p class="hint">After Wi-Fi connects, you’ll see IP in Status. Then choose one:</p>
-    <div class="row">
-      <button id="btnStaticOn" disabled>Make Static (DHCP off)</button>
-      <button id="btnStaticOff" disabled>Keep DHCP</button>
-    </div>
-    <p class="hint">Either choice will reboot the device and Bluetooth will stop (per your firmware).</p>
+  <div id="ipBanner" class="banner ok" style="margin-top:10px; display:none;">
+    <span class="big">Pico IP:</span>
+    <span class="big mono" id="ipText">—</span>
+    <button id="btnCopyIp">Copy IP</button>
+    <span class="spacer"></span>
+    <span class="hint">If you chose Static/DHCP, the Pico will reboot and BLE will stop.</span>
   </div>
 
-  <div class="card">
-    <h2>Status</h2>
-    <pre id="status">—</pre>
-    <h3>Scan Results</h3>
-    <pre id="scanResults">—</pre>
+  <div class="grid" style="margin-top:14px;">
+    <!-- Left: Wizard -->
+    <div class="card">
+      <div class="row">
+        <button id="btnConnect">Connect to Pico</button>
+        <button id="btnDisconnect" disabled>Disconnect</button>
+        <span class="pill"><strong>Device</strong> <span id="devName">—</span></span>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(128,128,128,.25);margin:14px 0;">
+
+      <h2 style="margin:0 0 6px;">1) Scan Wi-Fi</h2>
+      <div class="row">
+        <button id="btnScan" disabled>Scan SSIDs</button>
+        <span class="hint">Shows up to ~15 networks. Click a chip to fill SSID.</span>
+      </div>
+
+      <div class="chips" id="ssidChips"></div>
+
+      <label for="ssidList">SSID list</label>
+      <select id="ssidList" disabled>
+        <option value="">(Scan to populate)</option>
+      </select>
+
+      <label for="ssid">2) SSID</label>
+      <input id="ssid" placeholder="Pick from scan list or type SSID" autocomplete="off" />
+
+      <label for="pass">3) Password</label>
+      <input id="pass" type="password" placeholder="Wi-Fi password" autocomplete="off" />
+
+      <div class="row" style="margin-top:12px;">
+        <button id="btnSendCreds" disabled>Send SSID + Password</button>
+        <button id="btnConnectWifi" disabled>Connect Wi-Fi</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(128,128,128,.25);margin:14px 0;">
+
+      <h2 style="margin:0 0 6px;">4) Static IP option</h2>
+      <div class="hint">These enable after Wi-Fi connects and firmware asks “STATIC?”.</div>
+      <div class="row" style="margin-top:10px;">
+        <button id="btnStaticOn" disabled>Make Static (DHCP off)</button>
+        <button id="btnStaticOff" disabled>Keep DHCP</button>
+      </div>
+    </div>
+
+    <!-- Right: Logs -->
+    <div class="card">
+      <div class="row">
+        <span class="pill"><strong>Status</strong> live feed</span>
+        <span class="spacer"></span>
+        <button id="btnClear">Clear</button>
+      </div>
+      <pre id="status">—</pre>
+
+      <h3 style="margin:14px 0 6px;">Scan Results (raw)</h3>
+      <pre id="scanResults">—</pre>
+    </div>
   </div>
 
 <script>
@@ -81,64 +136,112 @@
   const CMD_UUID    = "12345678-1234-5678-1234-56789abcdef3";
   const STATUS_UUID = "12345678-1234-5678-1234-56789abcdef4";
   const SCAN_UUID   = "12345678-1234-5678-1234-56789abcdef5";
-  const INFO_UUID   = "12345678-1234-5678-1234-56789abcdef6"; // optional read if you expose it
+  const INFO_UUID   = "12345678-1234-5678-1234-56789abcdef6"; // optional
 
   const enc = new TextEncoder();
   const dec = new TextDecoder();
 
   const $ = (id) => document.getElementById(id);
 
-  let device = null;
-  let server = null;
-  let service = null;
+  let device=null, server=null, service=null;
+  let chSsid=null, chPass=null, chCmd=null, chStatus=null, chScan=null, chInfo=null;
 
-  let chSsid = null, chPass = null, chCmd = null, chStatus = null, chScan = null, chInfo = null;
+  const logLines = [];
+  const MAX_LINES = 50;
+
+  function ts() {
+    const d = new Date();
+    return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+  }
+
+  function setBanner(connected) {
+    const b = $("connBanner");
+    const ble = $("bleState");
+    if (connected) {
+      b.classList.remove("bad");
+      b.classList.add("ok");
+      b.querySelector(".big").textContent = "Connected";
+      b.querySelector(".hint").textContent = "You can scan SSIDs and provision Wi-Fi.";
+      ble.textContent = "ON";
+    } else {
+      b.classList.remove("ok");
+      b.classList.add("bad");
+      b.querySelector(".big").textContent = "Not connected";
+      b.querySelector(".hint").textContent = "Click “Connect to Pico” to begin.";
+      ble.textContent = "OFF";
+      $("ipBanner").style.display = "none";
+      $("ipText").textContent = "—";
+    }
+  }
 
   function setConnectedUI(connected) {
     $("btnDisconnect").disabled = !connected;
     $("btnScan").disabled = !connected;
     $("btnSendCreds").disabled = !connected;
     $("btnConnectWifi").disabled = !connected;
-    // static buttons only enabled after we see "OK:" in status, but allow after connect:
+    $("ssidList").disabled = !connected;
     $("btnStaticOn").disabled = true;
     $("btnStaticOff").disabled = true;
-    $("ssidList").disabled = !connected;
-    $("connState").textContent = connected ? `Connected to ${device?.name || "device"}` : "Not connected";
+    setBanner(connected);
   }
 
-  function appendStatusLine(line) {
-    const cur = $("status").textContent;
-    $("status").textContent = (cur === "—" ? "" : cur + "\n") + line;
-    // enable static choices once OK appears (your firmware prints OK: IP=... and STATIC? ...)
-    if (line.startsWith("OK:") || line.includes("STATIC?")) {
+  function renderLog() {
+    $("status").textContent = logLines.length ? logLines.join("\n") : "—";
+  }
+
+  function addLog(line) {
+    const msg = `[${ts()}] ${line}`;
+    logLines.push(msg);
+    while (logLines.length > MAX_LINES) logLines.shift();
+    renderLog();
+
+    // Detect IP and enable static choice
+    const ip = extractIp(line);
+    if (ip) {
+      $("ipText").textContent = ip;
+      $("ipBanner").style.display = "flex";
+    }
+
+    if (line.includes("STATIC?") || line.startsWith("OK:") || line.includes("STATIC_ON") || line.includes("STATIC_OFF")) {
+      // firmware prompt detected; enable buttons
       $("btnStaticOn").disabled = false;
       $("btnStaticOff").disabled = false;
     }
   }
 
+  function extractIp(text) {
+    // Matches "OK: IP=1.2.3.4" or "OK IP:1.2.3.4" or "IP=1.2.3.4"
+    const m = text.match(/(?:IP=|IP:)\s*([0-9]{1,3}(?:\.[0-9]{1,3}){3})/);
+    return m ? m[1] : null;
+  }
+
   function setScanText(text) {
     $("scanResults").textContent = text || "—";
-    // populate dropdown
+    const lines = (text || "").split("\n").map(s => s.trim()).filter(Boolean);
+
+    // dropdown
     const list = $("ssidList");
     list.innerHTML = "";
-    const lines = (text || "").split("\n").map(s => s.trim()).filter(Boolean);
-    if (!lines.length) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "(No SSIDs returned)";
-      list.appendChild(opt);
-      return;
-    }
     const def = document.createElement("option");
     def.value = "";
-    def.textContent = "(Select an SSID)";
+    def.textContent = lines.length ? "(Select an SSID)" : "(No SSIDs returned)";
     list.appendChild(def);
-
     for (const ssid of lines) {
       const opt = document.createElement("option");
       opt.value = ssid;
       opt.textContent = ssid;
       list.appendChild(opt);
+    }
+
+    // chips
+    const chips = $("ssidChips");
+    chips.innerHTML = "";
+    for (const ssid of lines) {
+      const c = document.createElement("div");
+      c.className = "chip";
+      c.textContent = ssid;
+      c.onclick = () => { $("ssid").value = ssid; };
+      chips.appendChild(c);
     }
   }
 
@@ -148,24 +251,30 @@
       return;
     }
 
-    $("status").textContent = "—";
+    logLines.length = 0;
+    renderLog();
     $("scanResults").textContent = "—";
-    appendStatusLine("Requesting BLE device…");
+    $("ssidChips").innerHTML = "";
+    $("ssidList").innerHTML = `<option value="">(Scan to populate)</option>`;
+
+    addLog("Requesting BLE device…");
 
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: "Pico WiFi Setup" }],      // matches your advertise name
+      filters: [{ name: "Pico WiFi Setup" }],
       optionalServices: [SVC_UUID]
     });
 
+    $("devName").textContent = device.name || "—";
+
     device.addEventListener("gattserverdisconnected", () => {
-      appendStatusLine("Disconnected.");
+      addLog("Disconnected.");
       setConnectedUI(false);
     });
 
-    appendStatusLine("Connecting GATT…");
+    addLog("Connecting GATT…");
     server = await device.gatt.connect();
 
-    appendStatusLine("Getting service…");
+    addLog("Getting service…");
     service = await server.getPrimaryService(SVC_UUID);
 
     [chSsid, chPass, chCmd, chStatus, chScan] = await Promise.all([
@@ -176,37 +285,36 @@
       service.getCharacteristic(SCAN_UUID),
     ]);
 
-    // INFO is optional — try to get it if present
     try { chInfo = await service.getCharacteristic(INFO_UUID); } catch { chInfo = null; }
 
-    // Status notifications
     await chStatus.startNotifications();
     chStatus.addEventListener("characteristicvaluechanged", (ev) => {
       const msg = dec.decode(ev.target.value);
-      appendStatusLine(msg);
+      addLog(msg);
     });
 
-    // Scan notifications
     await chScan.startNotifications();
     chScan.addEventListener("characteristicvaluechanged", (ev) => {
       const msg = dec.decode(ev.target.value);
       setScanText(msg);
+      addLog("Scan list updated.");
     });
 
-    // Read current values once
+    // Read initial status once
     try {
       const v = await chStatus.readValue();
-      appendStatusLine(dec.decode(v));
+      addLog(dec.decode(v));
     } catch {}
 
     if (chInfo) {
       try {
         const v = await chInfo.readValue();
-        appendStatusLine("INFO:\n" + dec.decode(v));
+        addLog("INFO:\n" + dec.decode(v));
       } catch {}
     }
 
     setConnectedUI(true);
+    addLog("Connected. Ready.");
   }
 
   async function disconnectBLE() {
@@ -216,35 +324,50 @@
 
   async function writeCmd(cmd) {
     await chCmd.writeValue(enc.encode(cmd));
-    appendStatusLine(`(sent CMD=${cmd})`);
+    addLog(`Sent CMD=${cmd}`);
   }
 
   async function sendCreds() {
     const ssid = $("ssid").value.trim() || $("ssidList").value.trim();
-    const pass = $("pass").value; // allow empty if open net
-    if (!ssid) { alert("Enter or select an SSID first."); return; }
+    const pass = $("pass").value;
+
+    if (!ssid) { alert("Enter or select an SSID."); return; }
 
     await chSsid.writeValue(enc.encode(ssid));
     await chPass.writeValue(enc.encode(pass));
-    appendStatusLine("(sent SSID/PASS)");
+    addLog("Sent SSID/PASS.");
   }
 
-  // UI wiring
-  $("btnConnect").onclick = () => connectBLE().catch(e => appendStatusLine("ERR: " + e.message));
+  $("btnConnect").onclick = () => connectBLE().catch(e => addLog("ERR: " + e.message));
   $("btnDisconnect").onclick = () => disconnectBLE();
 
-  $("btnScan").onclick = () => writeCmd("SCAN").catch(e => appendStatusLine("ERR: " + e.message));
+  $("btnScan").onclick = () => writeCmd("SCAN").catch(e => addLog("ERR: " + e.message));
 
   $("ssidList").onchange = () => {
     if ($("ssidList").value) $("ssid").value = $("ssidList").value;
   };
 
-  $("btnSendCreds").onclick = () => sendCreds().catch(e => appendStatusLine("ERR: " + e.message));
+  $("btnSendCreds").onclick = () => sendCreds().catch(e => addLog("ERR: " + e.message));
+  $("btnConnectWifi").onclick = () => writeCmd("CONNECT").catch(e => addLog("ERR: " + e.message));
 
-  $("btnConnectWifi").onclick = () => writeCmd("CONNECT").catch(e => appendStatusLine("ERR: " + e.message));
+  $("btnStaticOn").onclick = () => writeCmd("STATIC_ON").catch(e => addLog("ERR: " + e.message));
+  $("btnStaticOff").onclick = () => writeCmd("STATIC_OFF").catch(e => addLog("ERR: " + e.message));
 
-  $("btnStaticOn").onclick = () => writeCmd("STATIC_ON").catch(e => appendStatusLine("ERR: " + e.message));
-  $("btnStaticOff").onclick = () => writeCmd("STATIC_OFF").catch(e => appendStatusLine("ERR: " + e.message));
+  $("btnClear").onclick = () => { logLines.length = 0; renderLog(); };
+
+  $("btnCopyIp").onclick = async () => {
+    const ip = $("ipText").textContent.trim();
+    if (!ip || ip === "—") return;
+    try {
+      await navigator.clipboard.writeText(ip);
+      addLog("Copied IP to clipboard.");
+    } catch {
+      addLog("Copy failed (clipboard permission).");
+    }
+  };
+
+  // initial state
+  setConnectedUI(false);
 })();
 </script>
 </body>
