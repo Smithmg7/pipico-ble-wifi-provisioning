@@ -260,9 +260,11 @@
     addLog("Requesting BLE device…");
 
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: "Pico WiFi Setup" }],
+      filters: [{ services: [SVC_UUID] }],
       optionalServices: [SVC_UUID]
     });
+
+
 
     $("devName").textContent = device.name || "—";
 
@@ -323,7 +325,7 @@
   }
 
   async function writeCmd(cmd) {
-    await chCmd.writeValue(enc.encode(cmd));
+    await writeReliable(chCmd, enc.encode(cmd));
     addLog(`Sent CMD=${cmd}`);
   }
 
@@ -333,9 +335,16 @@
 
     if (!ssid) { alert("Enter or select an SSID."); return; }
 
-    await chSsid.writeValue(enc.encode(ssid));
-    await chPass.writeValue(enc.encode(pass));
+    await writeReliable(chSsid, enc.encode(ssid));
+    await writeReliable(chPass, enc.encode(pass));;
     addLog("Sent SSID/PASS.");
+  }
+  async function writeReliable(ch, bytes) {
+    if (typeof ch.writeValueWithResponse === "function") {
+      await ch.writeValueWithResponse(bytes);
+    } else {
+      await ch.writeValue(bytes);
+    }
   }
 
   $("btnConnect").onclick = () => connectBLE().catch(e => addLog("ERR: " + e.message));
