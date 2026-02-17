@@ -260,8 +260,7 @@
     addLog("Requesting BLE device…");
 
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "Pico" }],
-      optionalServices: [SVC_UUID]
+      filters: [{ name: "Pico WiFi Setup" }],
     });
 
 
