@@ -261,6 +261,7 @@
 
     device = await navigator.bluetooth.requestDevice({
       filters: [{ name: "Pico WiFi Setup" }],
+      optionalServices: [SVC_UUID],
     });
 
 
