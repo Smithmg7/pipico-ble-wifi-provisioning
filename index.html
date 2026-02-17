@@ -260,7 +260,7 @@
     addLog("Requesting BLE device…");
 
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [SVC_UUID] }],
+      acceptAllDevices: true,
       optionalServices: [SVC_UUID]
     });
 
