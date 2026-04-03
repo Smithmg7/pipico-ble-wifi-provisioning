@@ -60,6 +60,12 @@
     <span class="pill"><strong>BLE</strong> <span id="bleState">OFF</span></span>
   </div>
 
+  <div id="mdnsBanner" class="banner ok" style="margin-top:10px; display:none;">
+    <span class="big">Pico rebooting…</span>
+    <span class="hint">Once on WiFi, open:</span>
+    <a href="http://picow.local:8080" target="_blank" style="font-size:18px;font-weight:750;font-family:monospace;color:inherit;">http://picow.local:8080</a>
+  </div>
+
   <div id="ipBanner" class="banner ok" style="margin-top:10px; display:none;">
     <span class="big">Pico IP:</span>
     <span class="big mono" id="ipText">—</span>
@@ -200,6 +206,10 @@
     if (ip) {
       $("ipText").textContent = ip;
       $("ipBanner").style.display = "flex";
+    }
+    
+    if (line.includes("Rebooting")) {
+      $("mdnsBanner").style.display = "flex";
     }
 
     if (line.includes("STATIC?") || line.startsWith("OK:") || line.includes("STATIC_ON") || line.includes("STATIC_OFF")) {
