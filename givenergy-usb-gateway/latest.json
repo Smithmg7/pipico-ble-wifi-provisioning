@@ -1,7 +1,7 @@
 {
-  "version": "1.2.6",
+  "version": "1.2.7",
   "date": "2026-11-23",
-  "notes": "Fix OTA download stall; improved progress bar",
-  "bin_url": "https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.6.bin",
+  "notes": "OTA download stall fix; improved progress bar",
+  "bin_url": "https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.7.bin",
   "size": 547644
 }
