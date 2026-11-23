@@ -1,8 +1,7 @@
 {
-  "version": "1.2.4",
-  "date":    "2026-11-23",
-  "notes":   "OTA firmware download and flash via WiFi portal. Update Now button streams firmware to device over HTTPS.",
-  "bin_url": "https://smithmg7.github.io/pipico-ble-wifi-provisioning/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.4.bin",
-  "size":    547388
+  "version": "1.2.5",
+  "date": "2026-11-23",
+  "notes": "Live release: OTA firmware download and flash via WiFi portal",
+  "bin_url": "https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.5.bin",
+  "size": 547388
 }
-
