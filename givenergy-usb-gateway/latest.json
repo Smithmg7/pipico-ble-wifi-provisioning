@@ -1,1 +1,1 @@
-{"version":"1.2.8","date":"2026-11-23","notes":"Fix OTA page empty response (buffer overflow)","bin_url":"https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.8.bin","size":547644}
+{"version":"1.2.9","date":"2026-11-23","notes":"OTA download stall fix (deferred window open)","bin_url":"https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.9.bin","size":547700}
