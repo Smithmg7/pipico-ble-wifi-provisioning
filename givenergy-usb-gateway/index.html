@@ -1,0 +1,578 @@
+<title>GivEnergy USB Gateway</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
+
+<style>
+/* Firmware release page — dark-first terminal-adjacent aesthetic */
+:root {
+  --bg:        #f6f6f4;
+  --surface:   #ffffff;
+  --fg:        #0e1016;
+  --fg2:       #5c6070;
+  --border:    #e3e4e8;
+  --accent:    #18a34a;
+  --accent-h:  #15923f;
+  --chip-bg:   #0e1016;
+  --chip-fg:   #4ade80;
+  --code-bg:   #f0f0ee;
+  --sans:      'DM Sans', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', 'Courier New', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:       #0b0c0e;
+    --surface:  #131519;
+    --fg:       #e6e7ea;
+    --fg2:      #858a9a;
+    --border:   #22252e;
+    --accent:   #22c55e;
+    --accent-h: #16a34a;
+    --chip-bg:  #0c1812;
+    --chip-fg:  #4ade80;
+    --code-bg:  #1a1d24;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #0b0c0e;
+  --surface:  #131519;
+  --fg:       #e6e7ea;
+  --fg2:      #858a9a;
+  --border:   #22252e;
+  --accent:   #22c55e;
+  --accent-h: #16a34a;
+  --chip-bg:  #0c1812;
+  --chip-fg:  #4ade80;
+  --code-bg:  #1a1d24;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+  padding-block: 36px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.wrap {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ── Header ────────────────────────────────────── */
+.hdr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+.hdr-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--chip-bg);
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hdr-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+.hdr-sub {
+  font-size: 12px;
+  color: var(--fg2);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+/* ── Latest release card ───────────────────────── */
+.release-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 10px;
+}
+.card-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg2);
+  margin-bottom: 14px;
+}
+.release-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 9px;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--chip-fg);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.release-date {
+  font-size: 12.5px;
+  color: var(--fg2);
+  font-family: var(--mono);
+  margin-top: 10px;
+}
+.btn-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 9px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+.btn-dl:hover { background: var(--accent-h); }
+
+.release-notes {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--fg2);
+}
+.release-notes p { margin: 0; }
+
+.file-meta {
+  margin-top: 16px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.fm-item { display: flex; flex-direction: column; gap: 2px; }
+.fm-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg2);
+}
+.fm-value {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--fg);
+}
+
+/* ── Changelog ─────────────────────────────────── */
+.section-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg2);
+  margin: 28px 0 10px;
+}
+
+.changelog { display: flex; flex-direction: column; gap: 3px; }
+
+.cl-entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cl-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cl-hdr:hover { background: color-mix(in srgb, var(--border) 60%, transparent); }
+.cl-ver {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+}
+.cl-ver-latest { color: var(--accent); }
+.cl-new {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.cl-date {
+  font-size: 11.5px;
+  color: var(--fg2);
+  font-family: var(--mono);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.cl-chev {
+  color: var(--fg2);
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+.cl-entry.open .cl-chev { transform: rotate(90deg); }
+
+.cl-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 12px 14px 14px;
+  font-size: 13.5px;
+  color: var(--fg2);
+  line-height: 1.6;
+}
+.cl-entry.open .cl-body { display: block; }
+.cl-body ul { margin: 0; padding-left: 18px; }
+.cl-body li { margin-bottom: 5px; }
+.cl-body li:last-child { margin-bottom: 0; }
+
+/* ── Install ────────────────────────────────────── */
+.install-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-top: 28px;
+}
+.install-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.install-sub {
+  font-size: 13px;
+  color: var(--fg2);
+  margin: 0 0 14px;
+}
+.steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 13.5px;
+}
+.steps li::before {
+  content: counter(step);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  min-width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.pill {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--fg);
+}
+.ota-note {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--fg2);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── API endpoint ───────────────────────────────── */
+.api-wrap { margin-top: 28px; }
+.api-block {
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  border-radius: 10px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+.api-block pre { margin: 0; }
+.api-comment { color: #4ade8088; }
+
+/* ── Footer ─────────────────────────────────────── */
+.footer {
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--fg2);
+  font-family: var(--mono);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.footer a { color: var(--fg2); text-decoration: none; }
+.footer a:hover { color: var(--fg); }
+</style>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M13 2L4.5 13.5H12L11 22L19.5 10.5H12.5L13 2Z" fill="#4ade80"/>
+      </svg>
+    </div>
+    <div>
+      <div class="hdr-title">GivEnergy USB Gateway</div>
+      <div class="hdr-sub">Pico&nbsp;2W&nbsp;·&nbsp;WIZnet&nbsp;W5100S&nbsp;·&nbsp;port&nbsp;8899</div>
+    </div>
+  </header>
+
+  <!-- Latest release -->
+  <div class="release-card">
+    <div class="card-label">Latest release</div>
+    <div class="release-top">
+      <div>
+        <div class="version-badge">
+          <span class="live-dot"></span>v1.1.5
+        </div>
+        <div class="release-date">2026-11-08</div>
+      </div>
+      <a class="btn-dl" href="firmware/Pi_pico_ha_control_1.1.5.uf2">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 2v8M7.5 10l-3-3m3 3l3-3M2 13h11" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Download .uf2
+      </a>
+    </div>
+    <div class="release-notes">
+      <p>Added meter register lookup table (LUT) — supports float32, uint32, uint16 and ASCII register types. Groundwork for direct energy meter reading on the RS485 bus.</p>
+    </div>
+    <div class="file-meta">
+      <div class="fm-item">
+        <span class="fm-label">UF2 file</span>
+        <span class="fm-value">Pi_pico_ha_control_1.1.5.uf2</span>
+      </div>
+      <div class="fm-item">
+        <span class="fm-label">Size</span>
+        <span class="fm-value">794 KB</span>
+      </div>
+      <div class="fm-item">
+        <span class="fm-label">Board</span>
+        <span class="fm-value">Pico 2W (RP2350)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Changelog -->
+  <p class="section-head">Changelog</p>
+  <div class="changelog">
+
+    <div class="cl-entry open">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver cl-ver-latest">v1.1.5</span>
+        <span class="cl-new">latest</span>
+        <span class="cl-date">2026-11-08</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>Added <code style="font-family:var(--mono);font-size:12px">meter_lut.c/h</code>: lookup tables and decoder for energy meter input registers (FC04, addresses 2–362) and holding registers (FC03, addresses 1316–65305). Supports float32, uint32, uint16, and ascii4 register types.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver">v1.1.4</span>
+        <span class="cl-date">2026-11-07</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>BOOTSEL button held for 3 seconds at runtime resets WiFi portal password to default ("inverter") and reboots. No PC or serial terminal required.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver">v1.1.3</span>
+        <span class="cl-date">2026-11-07</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>Added <span class="pill">wifi-reset</span> command to the emergency USB config shell — resets WiFi portal password to "inverter" and reboots.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver">v1.1.2</span>
+        <span class="cl-date">2026-11-07</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>Removed boot-time USB port detection wait (was up to 15 s). WiFi config portal now starts immediately at every boot regardless of what is plugged into USB.</li>
+          <li>Emergency USB config shell retained as backup (DTR held 2 s with no inverter traffic).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver">v1.1.1</span>
+        <span class="cl-date">2026-11-07</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>WiFi AP authentication mode reverted to WPA2-MIXED. WPA2-AES-only was preventing some phones and laptops from connecting to the INVConfig portal.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-hdr" onclick="this.closest('.cl-entry').classList.toggle('open')">
+        <span class="cl-ver">v1.1.0</span>
+        <span class="cl-date">2026-10-17</span>
+        <svg class="cl-chev" width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M5.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cl-body">
+        <ul>
+          <li>Firmware version now shown on the status page.</li>
+          <li>Modbus exception response sent to GivTCP on RTU failure instead of a silent drop.</li>
+          <li>TCP receive changed to single fixed-size read to avoid partial-frame processing.</li>
+          <li>Watchdog updated inside USB CDC read-idle loop to prevent reset during slow inverter polling.</li>
+          <li>Debug output moved to ring buffer — UART hex-dump removed from hot path.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Manual flash instructions -->
+  <div class="install-card">
+    <div class="install-title">Manual flash via USB</div>
+    <div class="install-sub">Use when OTA is not available or as a recovery method.</div>
+    <ol class="steps">
+      <li>Download the <span class="pill">.uf2</span> file above.</li>
+      <li>Hold <strong>BOOTSEL</strong> on the Pico while plugging it into a PC. A drive called <span class="pill">RPI-RP2</span> appears.</li>
+      <li>Copy the <span class="pill">.uf2</span> file onto that drive. The Pico reboots automatically.</li>
+      <li>Reconnect the USB cable to the inverter.</li>
+    </ol>
+    <p class="ota-note">Your Ethernet IP settings and WiFi portal password are preserved across updates.</p>
+  </div>
+
+  <!-- OTA API endpoint -->
+  <div class="api-wrap">
+    <p class="section-head">OTA version endpoint</p>
+    <p style="font-size:13.5px;color:var(--fg2);margin:0">The gateway's OTA client fetches this URL to check for updates:</p>
+    <div class="api-block"><pre><span class="api-comment">GET</span> https://smithmg7.github.io/pipico-ble-wifi-provisioning/
+        givenergy-usb-gateway/latest.json
+
+{
+  "version": "1.1.5",
+  "date":    "2026-11-08",
+  "notes":   "Meter register LUT",
+  "bin_url": "https://smithmg7.github.io/.../firmware/Pi_pico_ha_control_1.1.5.bin",
+  "size":    406060
+}</pre></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>GivEnergy USB Gateway</span>
+    <span>Pico&nbsp;2W&nbsp;/&nbsp;WIZnet&nbsp;W5100S</span>
+    <a href="https://github.com/Smithmg7/givenergy-pico-usb-gateway" target="_blank" rel="noopener">GitHub (private)</a>
+  </footer>
+
+</div>
+
+<script>
+  // Keyboard toggle for changelog entries
+  document.querySelectorAll('.cl-hdr').forEach(h => {
+    h.setAttribute('role', 'button');
+    h.setAttribute('tabindex', '0');
+    h.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        h.closest('.cl-entry').classList.toggle('open');
+      }
+    });
+  });
+</script>
