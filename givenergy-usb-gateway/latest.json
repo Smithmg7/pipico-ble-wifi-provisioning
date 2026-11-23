@@ -1,7 +1,7 @@
 {
-  "version": "1.2.5",
+  "version": "1.2.6",
   "date": "2026-11-23",
-  "notes": "Live release: OTA firmware download and flash via WiFi portal",
-  "bin_url": "https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.5.bin",
-  "size": 547388
+  "notes": "Fix OTA download stall; improved progress bar",
+  "bin_url": "https://raw.githubusercontent.com/Smithmg7/pipico-ble-wifi-provisioning/main/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.6.bin",
+  "size": 547644
 }
