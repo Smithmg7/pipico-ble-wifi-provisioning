@@ -1,7 +1,8 @@
 {
-  "version": "1.1.5",
-  "date":    "2026-11-08",
-  "notes":   "Meter register LUT for energy meter decoding",
-  "bin_url": "https://smithmg7.github.io/pipico-ble-wifi-provisioning/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.1.5.bin",
-  "size":    406060
+  "version": "1.2.2",
+  "date":    "2026-11-23",
+  "notes":   "OTA firmware version check via WiFi portal. Concurrent AP+STA: AP stays up while Pico connects to home WiFi to check for updates.",
+  "bin_url": "https://smithmg7.github.io/pipico-ble-wifi-provisioning/givenergy-usb-gateway/firmware/Pi_pico_ha_control_1.2.2.bin",
+  "size":    543668
 }
+
